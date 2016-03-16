@@ -30,8 +30,8 @@ float convertRawAcceleration(int aRaw) {
   // since we are using 2G range
   // -2g maps to a raw value of -32768
   // +2g maps to a raw value of 32767
-  
-  float a = (aRaw * 16.0) / 32768.0;
+
+  float a = (aRaw * 2.0) / 32768.0;
 
   return a;
 }
@@ -41,16 +41,16 @@ void timedBlinkIsr()
   digitalWrite(13, toggle ? HIGH : LOW);
   toggle = (toggle + 1) & 0x01;
 
-//  // read raw accel/gyro measurements from device
-//  CurieIMU.readMotionSensor(ax, ay, az, gx, gy, gz);
-//  // use function from MagdwickAHRS.h to return quaternions
-//  filter.updateIMU(gx / factor, gy / factor, gz / factor, ax, ay, az);
-//  // functions to find yaw roll and pitch from quaternions
-//  yaw = filter.getYaw();
-//  roll = filter.getRoll();
-//  pitch = filter.getPitch();
+  //  // read raw accel/gyro measurements from device
+  //  CurieIMU.readMotionSensor(ax, ay, az, gx, gy, gz);
+  //  // use function from MagdwickAHRS.h to return quaternions
+  //  filter.updateIMU(gx / factor, gy / factor, gz / factor, ax, ay, az);
+  //  // functions to find yaw roll and pitch from quaternions
+  //  yaw = filter.getYaw();
+  //  roll = filter.getRoll();
+  //  pitch = filter.getPitch();
 
-// read raw accelerometer measurements from device
+  // read raw accelerometer measurements from device
   CurieIMU.readAccelerometer(axRaw, ayRaw, azRaw);
 
   // convert the raw accelerometer data to G's and m/s^2
@@ -63,7 +63,7 @@ void timedBlinkIsr()
 void setup() {
   vx = vy = vz = 0;
   sx = sy = sz = 0;
-  
+
   Serial.begin(9600); // initialize Serial communication
   while (!Serial);    // wait for the serial port to open
 
@@ -112,9 +112,7 @@ void setup() {
 }
 
 void loop() {
-  //delay();
-
-  if(CurieTimerOne.rdRstTickCount() > 0) {
+  if (CurieTimerOne.rdRstTickCount() > 0) {
     vx += ax * dt; // m/s
     vy += ay * dt;
     //vz = 15;
@@ -123,30 +121,28 @@ void loop() {
     sy += vy * dt * 100; // m
     //sz += vz * dt;
   }
-
-  if (Serial.available() > 0) {
-    int val = Serial.read();
-    noInterrupts();
-    //if (val == 's') { // if incoming serial is "s"
-      Serial.print(ax, 4);
-      Serial.print(","); // print comma so values can be parsed
-      Serial.print(ay, 4);
-      Serial.print(","); // print comma so values can be parsed
-      Serial.print(az, 4);
-      Serial.print(","); // print comma so values can be parsed 
-      Serial.print(vx, 4);
-      Serial.print(","); // print comma so values can be parsed
-      Serial.print(vy, 4);
-      Serial.print(","); // print comma so values can be parsed
-      Serial.print(vz, 4);
-      Serial.print(","); // print comma so values can be parsed     
-      Serial.print(sx, 4);
-      Serial.print(","); // print comma so values can be parsed
-      Serial.print(sy, 4);
-      Serial.print(","); // print comma so values can be parsed
-      Serial.println(sz, 4);
-    //}
-      interrupts();
-  }
-
 }
+
+void serialEvent() {
+  Serial.read();
+  noInterrupts();
+  Serial.print(ax, 4);
+  Serial.print(","); // print comma so values can be parsed
+  Serial.print(ay, 4);
+  Serial.print(","); // print comma so values can be parsed
+  Serial.print(az, 4);
+  Serial.print(","); // print comma so values can be parsed
+  Serial.print(vx, 4);
+  Serial.print(","); // print comma so values can be parsed
+  Serial.print(vy, 4);
+  Serial.print(","); // print comma so values can be parsed
+  Serial.print(vz, 4);
+  Serial.print(","); // print comma so values can be parsed
+  Serial.print(sx, 4);
+  Serial.print(","); // print comma so values can be parsed
+  Serial.print(sy, 4);
+  Serial.print(","); // print comma so values can be parsed
+  Serial.println(sz, 4);
+  interrupts();
+}
+
